@@ -53,8 +53,10 @@ TokenInfo *ProxToken(char **charAtual)
     (*charAtual)++;
     break;
   case '*':
-    if(checarPotencia(&charAtual))
+    if(checarPotencia(&charAtual)){
       tipo = Potenciacao;
+      (*charAtual)++;
+    }
     else{
       if((*(*charAtual + 1)) != '\0')
         tipo = Multiplicacao;
@@ -69,7 +71,10 @@ TokenInfo *ProxToken(char **charAtual)
     tipo = Divisao;
     (*charAtual)++;
     break;
-  case ' ' || '\t':
+  case ' ':
+    (*charAtual)++;
+    return NULL;
+  case '\t':
     (*charAtual)++;
     return NULL;
   default:
@@ -102,7 +107,6 @@ int main(int argc, char *argv[])
   FILE *file;
   long size;
   char *textoArquivo;
-
   file = fopen(argv[1], "rb");
   if (!file)
   {
