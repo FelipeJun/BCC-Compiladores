@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
-typedef enum  
+typedef enum
 {
   Mais,
   Menos,
   Multiplicacao,
   Divisao,
   Potenciacao,
+  Numero,
   Indeterminado
 } Token;
 
@@ -27,7 +29,8 @@ TokenInfo *criarNovoToken(Token tipo, char valor)
   return token;
 }
 
-bool checarPotencia(char ***charAtual){
+bool checarPotencia(char ***charAtual)
+{
   char cAtual = ***charAtual;
   // printf("cAtual: %c\n",cAtual);
   char cProx = *(**charAtual + 1);
@@ -42,44 +45,55 @@ TokenInfo *ProxToken(char **charAtual)
 {
   char c = **charAtual;
   Token tipo = Indeterminado;
-  switch (c)
+  if (isdigit(c))
   {
-  case '+':
-    tipo = Mais;
+    tipo = Numero;
     (*charAtual)++;
-    break;
-  case '-':
-    tipo = Menos;
-    (*charAtual)++;
-    break;
-  case '*':
-    if(checarPotencia(&charAtual)){
-      tipo = Potenciacao;
+  }
+  else
+  {
+    switch (c)
+    {
+    case '+':
+      tipo = Mais;
       (*charAtual)++;
-    }
-    else{
-      if((*(*charAtual + 1)) != '\0')
-        tipo = Multiplicacao;
-      else{
+      break;
+    case '-':
+      tipo = Menos;
+      (*charAtual)++;
+      break;
+    case '*':
+      if (checarPotencia(&charAtual))
+      {
+        tipo = Potenciacao;
         (*charAtual)++;
-        return NULL;
       }
+      else
+      {
+        if ((*(*charAtual + 1)) != '\0')
+          tipo = Multiplicacao;
+        else
+        {
+          (*charAtual)++;
+          return NULL;
+        }
+      }
+      (*charAtual)++;
+      break;
+    case '/':
+      tipo = Divisao;
+      (*charAtual)++;
+      break;
+    case ' ':
+      (*charAtual)++;
+      return NULL;
+    case '\t':
+      (*charAtual)++;
+      return NULL;
+    default:
+      (*charAtual)++;
+      break;
     }
-    (*charAtual)++;
-    break;
-  case '/':
-    tipo = Divisao;
-    (*charAtual)++;
-    break;
-  case ' ':
-    (*charAtual)++;
-    return NULL;
-  case '\t':
-    (*charAtual)++;
-    return NULL;
-  default:
-    (*charAtual)++;
-    break;
   }
   TokenInfo *token = criarNovoToken(tipo, c);
   return token;
@@ -154,6 +168,9 @@ int main(int argc, char *argv[])
       break;
     case Potenciacao:
       printf("Potenciacao\n");
+      break;
+    case Numero:
+      printf("Numero: %c\n", tokens[i].valor);
       break;
     case Indeterminado:
       printf("Indertemidado: %c\n", tokens[i].valor);
