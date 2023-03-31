@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 
+#define TAMANHO 255
+
 typedef enum
 {
   Mais,
@@ -18,14 +20,16 @@ typedef enum
 typedef struct
 {
   Token tipo;
-  char valor;
+  char valor[TAMANHO];
 } TokenInfo;
 
-TokenInfo *criarNovoToken(Token tipo, char valor)
+TokenInfo *criarNovoToken(Token tipo, char*valor, bool numberChecker)
 {
   TokenInfo *token = (TokenInfo *)malloc(sizeof(TokenInfo));
   token->tipo = tipo;
   token->valor = valor;
+  
+
   return token;
 }
 
@@ -41,14 +45,31 @@ bool checarPotencia(char ***charAtual)
     return false;
 }
 
+/*
+Nesta nova função, tem que fazer um while q vai fica rodando até o numero acabar, 
+e retorar o valor de quanto ele vai pular na função proxToken
+
+Tambem tem que ver como armazenar o valor do numero
+*/
+int checarNumeros(char ***charAtual){
+
+  char cAtual = ***charAtual;
+  char cProx = *(**charAtual + 1);
+  if(isdigit(cProx) || cProx == '.'){
+
+  }
+
+}
+
 TokenInfo *ProxToken(char **charAtual)
 {
   char c = **charAtual;
   Token tipo = Indeterminado;
   if (isdigit(c))
   {
+    int jumpChars = checarNumeros(&charAtual);
     tipo = Numero;
-    (*charAtual)++;
+    (*charAtual)+= jumpChars;
   }
   else
   {
