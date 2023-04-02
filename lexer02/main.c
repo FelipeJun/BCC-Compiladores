@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-typedef enum
+typedef enum  
 {
   Mais,
   Menos,
   Multiplicacao,
   Divisao,
+  Potenciacao,
   Indeterminado
 } Token;
 
@@ -25,6 +27,17 @@ TokenInfo *criarNovoToken(Token tipo, char valor)
   return token;
 }
 
+bool checarPotencia(char ***charAtual){
+  char cAtual = ***charAtual;
+  // printf("cAtual: %c\n",cAtual);
+  char cProx = *(**charAtual + 1);
+  // printf("cProx: %c\n",cProx);
+  if (cAtual == cProx && cProx != '\0')
+    return true;
+  else
+    return false;
+}
+
 TokenInfo *ProxToken(char **charAtual)
 {
   char c = **charAtual;
@@ -40,7 +53,18 @@ TokenInfo *ProxToken(char **charAtual)
     (*charAtual)++;
     break;
   case '*':
-    tipo = Multiplicacao;
+    if(checarPotencia(&charAtual)){
+      tipo = Potenciacao;
+      (*charAtual)++;
+    }
+    else{
+      if((*(*charAtual + 1)) != '\0')
+        tipo = Multiplicacao;
+      else{
+        (*charAtual)++;
+        return NULL;
+      }
+    }
     (*charAtual)++;
     break;
   case '/':
@@ -48,6 +72,9 @@ TokenInfo *ProxToken(char **charAtual)
     (*charAtual)++;
     break;
   case ' ':
+    (*charAtual)++;
+    return NULL;
+  case '\t':
     (*charAtual)++;
     return NULL;
   default:
@@ -80,7 +107,6 @@ int main(int argc, char *argv[])
   FILE *file;
   long size;
   char *textoArquivo;
-
   file = fopen(argv[1], "rb");
   if (!file)
   {
@@ -125,6 +151,9 @@ int main(int argc, char *argv[])
       break;
     case Divisao:
       printf("Divisao\n");
+      break;
+    case Potenciacao:
+      printf("Potenciacao\n");
       break;
     case Indeterminado:
       printf("Indertemidado: %c\n", tokens[i].valor);
