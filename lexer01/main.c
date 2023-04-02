@@ -21,12 +21,12 @@ typedef struct
   char *valor;
 } TokenInfo;
 
-TokenInfo *criarNovoToken(Token tipo, char *valor)
+TokenInfo *criarNovoToken(Token tipo, char **valor)
 {
   TokenInfo *token = (TokenInfo *)malloc(sizeof(TokenInfo));
   token->tipo = tipo;
-  token->valor = (char *)malloc(strlen(valor) + 1);
-  strcpy(token->valor, valor);
+  token->valor = (char *)malloc(strlen(*valor) + 1);
+  strcpy(token->valor, *valor);
 
   return token;
 }
@@ -41,19 +41,20 @@ bool checarPotencia(char ***charAtual)
     return false;
 }
 
-/*
-Nesta nova função, tem que fazer um while q vai fica rodando até o numero acabar,
-e retorar o valor de quanto ele vai pular na função proxToken
+bool checarNumerico(char charAtual){
+  if((isdigit(charAtual) || charAtual == '.') && (charAtual != '\0' && charAtual != ' ' && charAtual != '\t'))
+    return true;
+  else
+    return false;
+}
 
-Tambem tem que ver como armazenar o valor do numero
-*/
 char* checarNumeros(char ***charAtual)
 {
   char* copia = strdup(**charAtual);
   char* vetor = (char*) malloc(sizeof(char) * 24);
   char cAtual = *copia;
   int i = 0;
-  while (isdigit(cAtual) || cAtual == '.')
+  while (checarNumerico(cAtual))
   {
     vetor[i] = cAtual;
     i++;
@@ -68,12 +69,16 @@ TokenInfo *ProxToken(char **charAtual)
 {
   char *c = (char*) malloc(sizeof(char));
   Token tipo = Indeterminado;
+  int jumper = 0;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
     char* valor = checarNumeros(&charAtual);
-    c = (char*) realloc(c, sizeof(char) * (strlen(valor)));
+    jumper = strlen(valor);
+    c = (char*) realloc(c, sizeof(char) * (jumper));
     strcpy(c, valor);
+    (*charAtual)+= jumper;
+    free(valor);
   }
   else
   {
@@ -111,7 +116,7 @@ TokenInfo *ProxToken(char **charAtual)
     (*charAtual)++;
   }
 
-  TokenInfo *token = criarNovoToken(tipo, c);
+  TokenInfo *token = criarNovoToken(tipo, &c);
   free(c);
   return token;
 }
@@ -190,7 +195,7 @@ int main(int argc, char *argv[])
       printf("Numero: %s\n", tokens[i].valor);
       break;
     case Indeterminado:
-      printf("Indertemidado: %c\n", tokens[i].valor);
+      printf("Indertemidado: %s\n", tokens[i].valor);
       break;
     }
   }
