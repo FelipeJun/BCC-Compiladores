@@ -27,7 +27,6 @@ TokenInfo *criarNovoToken(Token tipo, char *valor)
   token->tipo = tipo;
   token->valor = (char *)malloc(strlen(valor) + 1);
   strcpy(token->valor, valor);
-  
 
   return token;
 }
@@ -43,34 +42,38 @@ bool checarPotencia(char ***charAtual)
 }
 
 /*
-Nesta nova função, tem que fazer um while q vai fica rodando até o numero acabar, 
+Nesta nova função, tem que fazer um while q vai fica rodando até o numero acabar,
 e retorar o valor de quanto ele vai pular na função proxToken
 
 Tambem tem que ver como armazenar o valor do numero
 */
-void checarNumeros(char ***charAtual){
-  printf("ENTROU NA FUNÇÃO\n");
-  // char* vetor = malloc(TAMANHO * sizeof(char));
-
-  char cAtual = ***charAtual;
-  char cProx;
-  printf("Atual %c",cAtual);
-  while(isdigit(cAtual) || cAtual == '.'){
-    // strcpy(vetor, cAtual);
-    cProx = *(**charAtual + 1);
-    printf("Atual %c e cProx %c",cAtual,cProx);
+char* checarNumeros(char ***charAtual)
+{
+  char* copia = strdup(**charAtual);
+  char* vetor = (char*) malloc(sizeof(char) * 24);
+  char cAtual = *copia;
+  int i = 0;
+  while (isdigit(cAtual) || cAtual == '.')
+  {
+    vetor[i] = cAtual;
+    i++;
+    cAtual = *(++(copia));
   }
-  // printf("%s",vetor);
+  vetor[i] = '\0';
+  free(copia);
+  return vetor;
 }
 
 TokenInfo *ProxToken(char **charAtual)
 {
-  char c = **charAtual;
+  char *c = (char*) malloc(sizeof(char));
   Token tipo = Indeterminado;
-  if (isdigit(c))
+  if (isdigit(**charAtual))
   {
-    // char* valor = checarNumeros(&charAtual);
     tipo = Numero;
+    char* valor = checarNumeros(&charAtual);
+    c = (char*) realloc(c, sizeof(char) * (strlen(valor)));
+    strcpy(c, valor);
   }
   else
   {
@@ -78,9 +81,11 @@ TokenInfo *ProxToken(char **charAtual)
     {
     case '+':
       tipo = Mais;
+      *c = **charAtual;
       break;
     case '-':
       tipo = Menos;
+      *c = **charAtual;
       break;
     case '*':
       if (checarPotencia(&charAtual))
@@ -90,9 +95,11 @@ TokenInfo *ProxToken(char **charAtual)
       }
       else
         tipo = Multiplicacao;
+      *c = **charAtual;
       break;
     case '/':
       tipo = Divisao;
+      *c = **charAtual;
       break;
     case ' ':
       return NULL;
@@ -103,7 +110,9 @@ TokenInfo *ProxToken(char **charAtual)
     }
     (*charAtual)++;
   }
-  TokenInfo *token = criarNovoToken(tipo, &c);
+
+  TokenInfo *token = criarNovoToken(tipo, c);
+  free(c);
   return token;
 }
 
@@ -153,7 +162,7 @@ int main(int argc, char *argv[])
 
   fclose(file);
 
-  printf("%s\n", textoArquivo);
+  printf("Arquivo: %s\n", textoArquivo);
 
   TokenInfo *tokens;
   int tamanho;
@@ -178,7 +187,7 @@ int main(int argc, char *argv[])
       printf("Potenciacao\n");
       break;
     case Numero:
-      printf("Numero: %c\n", tokens[i].valor);
+      printf("Numero: %s\n", tokens[i].valor);
       break;
     case Indeterminado:
       printf("Indertemidado: %c\n", tokens[i].valor);
