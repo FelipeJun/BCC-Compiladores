@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#define TAMANHO 255
-
 typedef enum
 {
   Mais,
@@ -20,14 +18,15 @@ typedef enum
 typedef struct
 {
   Token tipo;
-  char valor[TAMANHO];
+  char *valor;
 } TokenInfo;
 
-TokenInfo *criarNovoToken(Token tipo, char*valor, bool numberChecker)
+TokenInfo *criarNovoToken(Token tipo, char *valor)
 {
   TokenInfo *token = (TokenInfo *)malloc(sizeof(TokenInfo));
   token->tipo = tipo;
-  token->valor = valor;
+  token->valor = (char *)malloc(strlen(valor) + 1);
+  strcpy(token->valor, valor);
   
 
   return token;
@@ -36,9 +35,7 @@ TokenInfo *criarNovoToken(Token tipo, char*valor, bool numberChecker)
 bool checarPotencia(char ***charAtual)
 {
   char cAtual = ***charAtual;
-  // printf("cAtual: %c\n",cAtual);
   char cProx = *(**charAtual + 1);
-  // printf("cProx: %c\n",cProx);
   if (cAtual == cProx && cProx != '\0')
     return true;
   else
@@ -51,14 +48,19 @@ e retorar o valor de quanto ele vai pular na função proxToken
 
 Tambem tem que ver como armazenar o valor do numero
 */
-int checarNumeros(char ***charAtual){
+void checarNumeros(char ***charAtual){
+  printf("ENTROU NA FUNÇÃO\n");
+  // char* vetor = malloc(TAMANHO * sizeof(char));
 
   char cAtual = ***charAtual;
-  char cProx = *(**charAtual + 1);
-  if(isdigit(cProx) || cProx == '.'){
-
+  char cProx;
+  printf("Atual %c",cAtual);
+  while(isdigit(cAtual) || cAtual == '.'){
+    // strcpy(vetor, cAtual);
+    cProx = *(**charAtual + 1);
+    printf("Atual %c e cProx %c",cAtual,cProx);
   }
-
+  // printf("%s",vetor);
 }
 
 TokenInfo *ProxToken(char **charAtual)
@@ -67,21 +69,18 @@ TokenInfo *ProxToken(char **charAtual)
   Token tipo = Indeterminado;
   if (isdigit(c))
   {
-    int jumpChars = checarNumeros(&charAtual);
+    // char* valor = checarNumeros(&charAtual);
     tipo = Numero;
-    (*charAtual)+= jumpChars;
   }
   else
   {
-    switch (c)
+    switch (**charAtual)
     {
     case '+':
       tipo = Mais;
-      (*charAtual)++;
       break;
     case '-':
       tipo = Menos;
-      (*charAtual)++;
       break;
     case '*':
       if (checarPotencia(&charAtual))
@@ -90,33 +89,21 @@ TokenInfo *ProxToken(char **charAtual)
         (*charAtual)++;
       }
       else
-      {
-        if ((*(*charAtual + 1)) != '\0')
-          tipo = Multiplicacao;
-        else
-        {
-          (*charAtual)++;
-          return NULL;
-        }
-      }
-      (*charAtual)++;
+        tipo = Multiplicacao;
       break;
     case '/':
       tipo = Divisao;
-      (*charAtual)++;
       break;
     case ' ':
-      (*charAtual)++;
       return NULL;
     case '\t':
-      (*charAtual)++;
       return NULL;
     default:
-      (*charAtual)++;
       break;
     }
+    (*charAtual)++;
   }
-  TokenInfo *token = criarNovoToken(tipo, c);
+  TokenInfo *token = criarNovoToken(tipo, &c);
   return token;
 }
 
