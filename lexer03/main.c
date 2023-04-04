@@ -107,8 +107,10 @@ TokenInfo *ProxToken(char **charAtual)
       *c = **charAtual;
       break;
     case ' ':
+      (*charAtual)++;
       return NULL;
     case '\t':
+      (*charAtual)++;
       return NULL;
     default:
       break;
