@@ -21,9 +21,8 @@ TokenInfo *criarNovoToken(Token tipo, char **valor)
 {
   TokenInfo *token = (TokenInfo *)malloc(sizeof(TokenInfo));
   token->tipo = tipo;
-  token->valor = (char *)malloc(strlen(*valor) + 1);
+  token->valor = (char *)malloc(strlen(*valor));
   strcpy(token->valor, *valor);
-
   return token;
 }
 
@@ -37,17 +36,18 @@ bool checarPotencia(char ***charAtual)
     return false;
 }
 
-bool checarNumerico(char charAtual){
-  if((isdigit(charAtual) || charAtual == '.') && charAtual != '\0' && charAtual != ' ' && charAtual != '\t')
+bool checarNumerico(char charAtual)
+{
+  if ((isdigit(charAtual) || charAtual == '.') && charAtual != '\0' && charAtual != ' ' && charAtual != '\t')
     return true;
   else
     return false;
 }
 
-char* checarNumeros(char ***charAtual)
+char *checarNumeros(char ***charAtual)
 {
-  char* copia = strdup(**charAtual);
-  char* vetor = (char*) malloc(sizeof(char) * 24);
+  char *copia = strdup(**charAtual);
+  char *vetor = (char *)malloc(sizeof(char) * 24);
   char cAtual = *copia;
   int i = 0;
   while (checarNumerico(cAtual))
@@ -63,17 +63,17 @@ char* checarNumeros(char ***charAtual)
 
 TokenInfo *ProxToken(char **charAtual)
 {
-  char *c = (char*) malloc(sizeof(char));
+  char *c = (char *)malloc(sizeof(char));
   Token tipo = Indeterminado;
   int jumper = 0;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
-    char* valor = checarNumeros(&charAtual);
+    char *valor = checarNumeros(&charAtual);
     jumper = strlen(valor);
-    c = (char*) realloc(c, sizeof(char) * (jumper));
+    *c = (char *)realloc(c, sizeof(char) * (jumper + 1));
     strcpy(c, valor);
-    (*charAtual)+= jumper;
+    (*charAtual) += jumper;
     free(valor);
   }
   else
@@ -82,15 +82,17 @@ TokenInfo *ProxToken(char **charAtual)
     {
     case '+':
       tipo = Mais;
-      *c = **charAtual;
       break;
     case ' ':
+      (*charAtual)++;
       return NULL;
     case '\t':
+      (*charAtual)++;
       return NULL;
     default:
       break;
     }
+
     (*charAtual)++;
   }
 
@@ -101,7 +103,7 @@ TokenInfo *ProxToken(char **charAtual)
 
 void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
 {
-  *tokens = (TokenInfo *)malloc(sizeof(TokenInfo) * strlen(s));
+  *tokens = (TokenInfo *)malloc(sizeof(TokenInfo) * (strlen(s) + 1));
   *tamanho = 0;
 
   char *charAtual = s;
@@ -117,21 +119,43 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
   }
 }
 
-void parser(TokenInfo **tokens,int *tamanho){
-  for (int i = 0; i < (*tamanho); i++){
-    switch ((*tokens)[i].tipo)
+void parser(TokenInfo **tokens, int *tamanho)
+{
+  int expressao = 0;
+  int size = 0;
+  if (*tamanho > 0)
+  {
+    if ((*tokens)[0].tipo != Numero)
     {
-    case Mais:
-      printf("EXPRESSAO MAIS\n");
-      break;
-    case Numero:
-      printf("EXPRESSAO NUMERO\n");
-      break;
-    case Indeterminado:
-      printf("EXPRESSAO Indeterminado\n");
-      break;
+      perror("PRIMEIRO TOKEN NAO E NUMERO\n");
+      return 1;
+    }
+    for (int i = 0; i < *tamanho; i++)
+    {
+      switch ((*tokens)[i].tipo)
+      {
+      case Mais:
+        if((*tokens)[i + 1].tipo == Numero){
+          expressao +=atoi((*tokens)[i + 1].valor);
+        }
+        break;
+      case Numero:
+        if (expressao == 0){
+          expressao =atoi((*tokens)[i].valor);
+        }
+        break;
+      case Indeterminado:
+        perror("ARQUIVO INVALIDO\n");
+        return 1;
+        break;
+      }
     }
   }
+  else
+  {
+    printf("Resultado: Vazio\n");
+  }
+  printf("RESULTADO %d",expressao);
 }
 
 int main(int argc, char *argv[])
@@ -183,7 +207,7 @@ int main(int argc, char *argv[])
       break;
     }
   }
-  parser(&tokens,&tamanho);
+  parser(&tokens, &tamanho);
   free(tokens);
   free(textoArquivo);
   return 0;
