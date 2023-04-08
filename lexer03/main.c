@@ -68,6 +68,7 @@ char* checarNumeros(char ***charAtual)
 TokenInfo *ProxToken(char **charAtual)
 {
   char *c = (char*) malloc(sizeof(char));
+  *c = **charAtual;
   Token tipo = Indeterminado;
   int jumper = 0;
   if (isdigit(**charAtual))
@@ -86,11 +87,10 @@ TokenInfo *ProxToken(char **charAtual)
     {
     case '+':
       tipo = Mais;
-      *c = **charAtual;
       break;
     case '-':
       tipo = Menos;
-      *c = **charAtual;
+      
       break;
     case '*':
       if (checarPotencia(&charAtual))
@@ -104,7 +104,6 @@ TokenInfo *ProxToken(char **charAtual)
       break;
     case '/':
       tipo = Divisao;
-      *c = **charAtual;
       break;
     case ' ':
       (*charAtual)++;
