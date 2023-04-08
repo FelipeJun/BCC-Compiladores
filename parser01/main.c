@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <math.h>
 
 typedef enum
 {
@@ -83,13 +84,9 @@ TokenInfo *ProxToken(char **charAtual)
     case '+':
       tipo = Mais;
       break;
-    case ' ':
-      (*charAtual)++;
-      return NULL;
-    case '\t':
-      (*charAtual)++;
-      return NULL;
     default:
+      (*charAtual)++;
+      return NULL;
       break;
     }
 
@@ -119,43 +116,46 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
   }
 }
 
-void parser(TokenInfo **tokens, int *tamanho)
+bool parserChecker(Token tipo){
+  if(tipo == Numero)
+    return true;
+  perror("Termo Invalido em arquivo\n");
+  exit(1);
+}
+
+
+double parser(TokenInfo **tokens, int *tamanho)
 {
-  int expressao = 0;
-  int size = 0;
+  double expressao = 0;
+  double tolerancia = 0.0000001;
   if (*tamanho > 0)
   {
     if ((*tokens)[0].tipo != Numero)
     {
-      perror("PRIMEIRO TOKEN NAO E NUMERO\n");
-      return 1;
+      perror("Primeiro token nao e um numero\n");
+      exit(1);
     }
     for (int i = 0; i < *tamanho; i++)
     {
       switch ((*tokens)[i].tipo)
       {
       case Mais:
-        if((*tokens)[i + 1].tipo == Numero){
-          expressao +=atoi((*tokens)[i + 1].valor);
-        }
+        if(parserChecker((*tokens)[i + 1].tipo))
+          expressao +=atof((*tokens)[i + 1].valor);
         break;
       case Numero:
-        if (expressao == 0){
-          expressao =atoi((*tokens)[i].valor);
+        if (fabs(expressao) <= tolerancia){
+          expressao =atof((*tokens)[i].valor);
         }
         break;
       case Indeterminado:
-        perror("ARQUIVO INVALIDO\n");
-        return 1;
+        perror("Arquivo invalido\n");
+        exit(1);
         break;
       }
     }
   }
-  else
-  {
-    printf("Resultado: Vazio\n");
-  }
-  printf("RESULTADO %d",expressao);
+  return expressao;
 }
 
 int main(int argc, char *argv[])
@@ -163,6 +163,7 @@ int main(int argc, char *argv[])
   FILE *file;
   long size;
   char *textoArquivo;
+  double expressao = 0;
   file = fopen(argv[1], "rb");
   if (!file)
   {
@@ -187,18 +188,22 @@ int main(int argc, char *argv[])
 
   fclose(file);
 
-  printf("Arquivo: %s\n", textoArquivo);
-
+  printf("ARQUIVO: %s\n", textoArquivo);
+  for (int i = 0; i < 50; i++)
+    printf("-");
+  printf("\n");
+  
   TokenInfo *tokens;
   int tamanho;
   tokenizer(textoArquivo, &tokens, &tamanho);
+  printf("LEITURA DE TOKENS:\n");
   for (int i = 0; i < tamanho; i++)
   {
     switch (tokens[i].tipo)
     {
     case Mais:
       printf("Mais\n");
-      break;
+        break;
     case Numero:
       printf("Numero: %s\n", tokens[i].valor);
       break;
@@ -207,7 +212,11 @@ int main(int argc, char *argv[])
       break;
     }
   }
-  parser(&tokens, &tamanho);
+  expressao = parser(&tokens, &tamanho);
+  if (expressao == 0)
+    printf("Resultado: Vazio\n");
+  else
+    printf("Resultado: %.2f\n",expressao);
   free(tokens);
   free(textoArquivo);
   return 0;
