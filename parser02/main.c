@@ -12,15 +12,19 @@ typedef enum
   Multiplicacao,
   Divisao,
   Potenciacao,
-  Numero,
-  Indeterminado
+  Numero
 } Token;
-
 typedef struct
 {
   Token tipo;
   char *valor;
 } TokenInfo;
+
+typedef struct
+{
+  TokenInfo *tokens;
+  int prioridade;
+} Termo;
 
 TokenInfo *criarNovoToken(Token tipo, char **valor)
 {
@@ -69,7 +73,8 @@ char *checarNumeros(char ***charAtual)
 TokenInfo *ProxToken(char **charAtual)
 {
   char *c = (char *)malloc(sizeof(char));
-  Token tipo = Indeterminado;
+  *c = **charAtual;
+  Token tipo;
   int jumper = 0;
   if (isdigit(**charAtual))
   {
@@ -99,11 +104,19 @@ TokenInfo *ProxToken(char **charAtual)
       }
       else
         tipo = Multiplicacao;
-      *c = **charAtual;
       break;
     case '/':
       tipo = Divisao;
       break;
+    case ' ':
+      (*charAtual)++;
+      return NULL;
+    case '\t':
+      (*charAtual)++;
+      return NULL;
+    case '\n':
+      (*charAtual)++;
+      return NULL;
     default:
       (*charAtual)++;
       return NULL;
@@ -112,7 +125,6 @@ TokenInfo *ProxToken(char **charAtual)
 
     (*charAtual)++;
   }
-
   TokenInfo *token = criarNovoToken(tipo, &c);
   free(c);
   return token;
@@ -136,18 +148,19 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
   }
 }
 
-bool parserChecker(Token tipo){
-  if(tipo == Numero)
+bool parserChecker(Token tipo)
+{
+  if (tipo == Numero)
     return true;
   perror("Termo Invalido em arquivo\n");
   exit(1);
 }
 
-
 double parser(TokenInfo **tokens, int *tamanho)
 {
   double expressao = 0;
   double tolerancia = 0.0000001;
+  Termo *Termos = (Termo *)malloc(sizeof(Termo));
   if (*tamanho > 0)
   {
     if ((*tokens)[0].tipo != Numero)
@@ -160,31 +173,32 @@ double parser(TokenInfo **tokens, int *tamanho)
       switch ((*tokens)[i].tipo)
       {
       case Mais:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao +=atof((*tokens)[i + 1].valor);
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao += atof((*tokens)[i + 1].valor);
         break;
       case Menos:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao -=atof((*tokens)[i + 1].valor);
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao -= atof((*tokens)[i + 1].valor);
         break;
       case Multiplicacao:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao *=atof((*tokens)[i + 1].valor);
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao *= atof((*tokens)[i + 1].valor);
         break;
       case Divisao:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao /=atof((*tokens)[i + 1].valor);
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao /= atof((*tokens)[i + 1].valor);
         break;
       case Potenciacao:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao = pow(expressao,atof((*tokens)[i + 1].valor));
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao = pow(expressao, atof((*tokens)[i + 1].valor));
         break;
       case Numero:
-        if (fabs(expressao) <= tolerancia){
-          expressao =atof((*tokens)[i].valor);
+        if (fabs(expressao) <= tolerancia)
+        {
+          expressao = atof((*tokens)[i].valor);
         }
         break;
-      case Indeterminado:
+      default:
         perror("Arquivo invalido\n");
         exit(1);
         break;
@@ -228,7 +242,7 @@ int main(int argc, char *argv[])
   for (int i = 0; i < 50; i++)
     printf("-");
   printf("\n");
-  
+
   TokenInfo *tokens;
   int tamanho;
   tokenizer(textoArquivo, &tokens, &tamanho);
@@ -255,16 +269,13 @@ int main(int argc, char *argv[])
     case Numero:
       printf("Numero: %s\n", tokens[i].valor);
       break;
-    case Indeterminado:
-      printf("Indertemidado: %s\n", tokens[i].valor);
-      break;
     }
   }
   expressao = parser(&tokens, &tamanho);
   if (expressao == 0)
     printf("Resultado: Vazio\n");
   else
-    printf("Resultado: %.2f\n",expressao);
+    printf("Resultado: %.2f\n", expressao);
   free(tokens);
   free(textoArquivo);
   return 0;
