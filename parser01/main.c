@@ -45,9 +45,9 @@ bool checarNumerico(char charAtual)
     return false;
 }
 
-char *checarNumeros(char ***charAtual)
+char *checarNumeros(char *charAtual)
 {
-  char *copia = strdup(**charAtual);
+  char *copia = charAtual;
   char *vetor = (char *)malloc(sizeof(char) * 24);
   char cAtual = *copia;
   int i = 0;
@@ -58,7 +58,6 @@ char *checarNumeros(char ***charAtual)
     cAtual = *(++(copia));
   }
   vetor[i] = '\0';
-  free(copia);
   return vetor;
 }
 
@@ -67,12 +66,13 @@ TokenInfo *ProxToken(char **charAtual)
   char *c = (char *)malloc(sizeof(char));
   Token tipo = Indeterminado;
   int jumper = 0;
+	char *cAtual= *charAtual;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
-    char *valor = checarNumeros(&charAtual);
+    char *valor = checarNumeros(cAtual);
     jumper = strlen(valor);
-    *c = (char *)realloc(c, sizeof(char) * (jumper + 1));
+    c = (char *)realloc(c, sizeof(char) * (jumper + 1));
     strcpy(c, valor);
     (*charAtual) += jumper;
     free(valor);
@@ -102,7 +102,6 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
 {
   *tokens = (TokenInfo *)malloc(sizeof(TokenInfo) * (strlen(s) + 1));
   *tamanho = 0;
-
   char *charAtual = s;
   while (*charAtual)
   {
@@ -111,7 +110,7 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
     {
       (*tokens)[*tamanho] = *token;
       (*tamanho)++;
-      free(token);
+			free(token);
     }
   }
 }
