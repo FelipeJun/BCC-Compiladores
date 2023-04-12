@@ -45,9 +45,9 @@ bool checarNumerico(char charAtual)
     return false;
 }
 
-char *checarNumeros(char ***charAtual)
+char *checarNumeros(char *charAtual)
 {
-  char *copia = strdup(**charAtual);
+  char *copia = charAtual;
   char *vetor = (char *)malloc(sizeof(char) * 24);
   char cAtual = *copia;
   int i = 0;
@@ -58,7 +58,6 @@ char *checarNumeros(char ***charAtual)
     cAtual = *(++(copia));
   }
   vetor[i] = '\0';
-  free(copia);
   return vetor;
 }
 
@@ -67,12 +66,13 @@ TokenInfo *ProxToken(char **charAtual)
   char *c = (char *)malloc(sizeof(char));
   Token tipo = Indeterminado;
   int jumper = 0;
+	char *cAtual= *charAtual;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
-    char *valor = checarNumeros(&charAtual);
+    char *valor = checarNumeros(cAtual);
     jumper = strlen(valor);
-    *c = (char *)realloc(c, sizeof(char) * (jumper + 1));
+    c = (char *)realloc(c, sizeof(char) * (jumper + 1));
     strcpy(c, valor);
     (*charAtual) += jumper;
     free(valor);
@@ -84,6 +84,15 @@ TokenInfo *ProxToken(char **charAtual)
     case '+':
       tipo = Mais;
       break;
+    case ' ':
+      (*charAtual)++;
+      return NULL;
+    case '\t':
+      (*charAtual)++;
+      return NULL;
+    case '\n':
+      (*charAtual)++;
+      return NULL;
     default:
       (*charAtual)++;
       return NULL;
@@ -102,7 +111,6 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
 {
   *tokens = (TokenInfo *)malloc(sizeof(TokenInfo) * (strlen(s) + 1));
   *tamanho = 0;
-
   char *charAtual = s;
   while (*charAtual)
   {
@@ -111,18 +119,18 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
     {
       (*tokens)[*tamanho] = *token;
       (*tamanho)++;
-      free(token);
+			free(token);
     }
   }
 }
 
-bool parserChecker(Token tipo){
-  if(tipo == Numero)
+bool parserChecker(Token tipo)
+{
+  if (tipo == Numero)
     return true;
   perror("Termo Invalido em arquivo\n");
   exit(1);
 }
-
 
 double parser(TokenInfo **tokens, int *tamanho)
 {
@@ -140,12 +148,13 @@ double parser(TokenInfo **tokens, int *tamanho)
       switch ((*tokens)[i].tipo)
       {
       case Mais:
-        if(parserChecker((*tokens)[i + 1].tipo))
-          expressao +=atof((*tokens)[i + 1].valor);
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao += atof((*tokens)[i + 1].valor);
         break;
       case Numero:
-        if (fabs(expressao) <= tolerancia){
-          expressao =atof((*tokens)[i].valor);
+        if (fabs(expressao) <= tolerancia)
+        {
+          expressao = atof((*tokens)[i].valor);
         }
         break;
       case Indeterminado:
@@ -192,7 +201,7 @@ int main(int argc, char *argv[])
   for (int i = 0; i < 50; i++)
     printf("-");
   printf("\n");
-  
+
   TokenInfo *tokens;
   int tamanho;
   tokenizer(textoArquivo, &tokens, &tamanho);
@@ -203,7 +212,7 @@ int main(int argc, char *argv[])
     {
     case Mais:
       printf("Mais\n");
-        break;
+      break;
     case Numero:
       printf("Numero: %s\n", tokens[i].valor);
       break;
@@ -216,7 +225,7 @@ int main(int argc, char *argv[])
   if (expressao == 0)
     printf("Resultado: Vazio\n");
   else
-    printf("Resultado: %.2f\n",expressao);
+    printf("Resultado: %.2f\n", expressao);
   free(tokens);
   free(textoArquivo);
   return 0;
