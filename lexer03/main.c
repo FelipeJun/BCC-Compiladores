@@ -31,27 +31,28 @@ TokenInfo *criarNovoToken(Token tipo, char **valor)
   return token;
 }
 
-bool checarPotencia(char ***charAtual)
+bool checarPotencia(char *charAtual)
 {
-  char cAtual = ***charAtual;
-  char cProx = *(**charAtual + 1);
+  char cAtual = *charAtual;
+  char cProx = *(++(charAtual));
   if (cAtual == cProx && cProx != '\0')
     return true;
   else
     return false;
 }
 
-bool checarNumerico(char charAtual){
-  if((isdigit(charAtual) || charAtual == '.') && charAtual != '\0' && charAtual != ' ' && charAtual != '\t')
+bool checarNumerico(char charAtual)
+{
+  if ((isdigit(charAtual) || charAtual == '.') && charAtual != '\0' && charAtual != ' ' && charAtual != '\t')
     return true;
   else
     return false;
 }
 
-char* checarNumeros(char ***charAtual)
+char *checarNumeros(char *charAtual)
 {
-  char* copia = strdup(**charAtual);
-  char* vetor = (char*) malloc(sizeof(char) * 24);
+  char *copia = charAtual;
+  char *vetor = (char *)malloc(sizeof(char) * 24);
   char cAtual = *copia;
   int i = 0;
   while (checarNumerico(cAtual))
@@ -61,24 +62,23 @@ char* checarNumeros(char ***charAtual)
     cAtual = *(++(copia));
   }
   vetor[i] = '\0';
-  free(copia);
   return vetor;
 }
 
 TokenInfo *ProxToken(char **charAtual)
 {
-  char *c = (char*) malloc(sizeof(char));
-  *c = **charAtual;
+  char *c = (char *)malloc(sizeof(char));
   Token tipo = Indeterminado;
   int jumper = 0;
+  char *cAtual = *charAtual;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
-    char* valor = checarNumeros(&charAtual);
+    char *valor = checarNumeros(cAtual);
     jumper = strlen(valor);
-    c = (char*) realloc(c, sizeof(char) * (jumper));
+    c = (char *)realloc(c, sizeof(char) * (jumper + 1));
     strcpy(c, valor);
-    (*charAtual)+= jumper;
+    (*charAtual) += jumper;
     free(valor);
   }
   else
@@ -90,10 +90,10 @@ TokenInfo *ProxToken(char **charAtual)
       break;
     case '-':
       tipo = Menos;
-      
+
       break;
     case '*':
-      if (checarPotencia(&charAtual))
+      if (checarPotencia(cAtual))
       {
         tipo = Potenciacao;
         (*charAtual)++;
@@ -169,6 +169,9 @@ int main(int argc, char *argv[])
   fclose(file);
 
   printf("Arquivo: %s\n", textoArquivo);
+  for (int i = 0; i < 50; i++)
+    printf("-");
+  printf("\n");
 
   TokenInfo *tokens;
   int tamanho;
