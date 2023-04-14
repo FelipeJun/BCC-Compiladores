@@ -1,10 +1,16 @@
 CC=gcc
-CFLAGS= -Wall -Wextra -pedantic -std=c11
+CFLAGS=  -Wall -Wextra -pedantic -lm -std=c11
 
-build: main
+ifeq ($(OS),Windows_NT)
+    RM = del /Q
+else
+    RM = rm -f
+endif
+
+build: clean main
 
 main: main.c
-	$(CC) $(CFLAGS) main.c -lm -o main
+	$(CC) $(CFLAGS) main.c -o main
 
 clean:
-	rm -f main
+	$(RM) *.o *.exe

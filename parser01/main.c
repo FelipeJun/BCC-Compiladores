@@ -8,6 +8,10 @@
 typedef enum
 {
   Mais,
+  Menos,
+  Multiplicacao,
+  Divisao,
+  Potenciacao,
   Numero,
   Indeterminado
 } Token;
@@ -27,10 +31,10 @@ TokenInfo *criarNovoToken(Token tipo, char **valor)
   return token;
 }
 
-bool checarPotencia(char ***charAtual)
+bool checarPotencia(char *charAtual)
 {
-  char cAtual = ***charAtual;
-  char cProx = *(**charAtual + 1);
+  char cAtual = *charAtual;
+  char cProx = *(++(charAtual));
   if (cAtual == cProx && cProx != '\0')
     return true;
   else
@@ -66,7 +70,7 @@ TokenInfo *ProxToken(char **charAtual)
   char *c = (char *)malloc(sizeof(char));
   Token tipo = Indeterminado;
   int jumper = 0;
-	char *cAtual= *charAtual;
+  char *cAtual = *charAtual;
   if (isdigit(**charAtual))
   {
     tipo = Numero;
@@ -84,6 +88,22 @@ TokenInfo *ProxToken(char **charAtual)
     case '+':
       tipo = Mais;
       break;
+    case '-':
+      tipo = Menos;
+      break;
+    case '*':
+      if (checarPotencia(cAtual))
+      {
+        tipo = Potenciacao;
+        (*charAtual)++;
+      }
+      else
+        tipo = Multiplicacao;
+      *c = **charAtual;
+      break;
+    case '/':
+      tipo = Divisao;
+      break;
     case ' ':
       (*charAtual)++;
       return NULL;
@@ -98,7 +118,6 @@ TokenInfo *ProxToken(char **charAtual)
       return NULL;
       break;
     }
-
     (*charAtual)++;
   }
 
@@ -119,7 +138,7 @@ void tokenizer(char *s, TokenInfo **tokens, int *tamanho)
     {
       (*tokens)[*tamanho] = *token;
       (*tamanho)++;
-			free(token);
+      free(token);
     }
   }
 }
@@ -150,6 +169,22 @@ double parser(TokenInfo **tokens, int *tamanho)
       case Mais:
         if (parserChecker((*tokens)[i + 1].tipo))
           expressao += atof((*tokens)[i + 1].valor);
+        break;
+      case Menos:
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao -= atof((*tokens)[i + 1].valor);
+        break;
+      case Multiplicacao:
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao *= atof((*tokens)[i + 1].valor);
+        break;
+      case Divisao:
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao /= atof((*tokens)[i + 1].valor);
+        break;
+      case Potenciacao:
+        if (parserChecker((*tokens)[i + 1].tipo))
+          expressao = pow(expressao, atof((*tokens)[i + 1].valor));
         break;
       case Numero:
         if (fabs(expressao) <= tolerancia)
@@ -212,6 +247,18 @@ int main(int argc, char *argv[])
     {
     case Mais:
       printf("Mais\n");
+      break;
+    case Menos:
+      printf("Menos\n");
+      break;
+    case Multiplicacao:
+      printf("Multiplicacao\n");
+      break;
+    case Divisao:
+      printf("Divisao\n");
+      break;
+    case Potenciacao:
+      printf("Potenciacao\n");
       break;
     case Numero:
       printf("Numero: %s\n", tokens[i].valor);
