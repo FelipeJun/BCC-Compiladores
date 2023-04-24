@@ -1,10 +1,6 @@
-CC=gcc
-CFLAGS= -Wall -Wextra -pedantic -std=c11 
-
 build: main
 
 main: main.c
-	$(CC) $(CFLAGS) main.c -o main
-
+	gcc -o main main.c tinyexpr.c -lm
 clean:
 	rm -f main
