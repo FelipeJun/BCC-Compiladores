@@ -217,10 +217,6 @@ bool checkInputCommands(char *texto)
       printf("Comando invalido!\n");
     }
   }
-  else
-  {
-    printf("%s", texto); // imprime a string na tela
-  }
   return false;
 }
 
@@ -237,33 +233,6 @@ int main()
     fgets(textoArquivo, TAMANHO_MAX_TEXTO, stdin);
     exit = checkInputCommands(textoArquivo);
     tokenizer(textoArquivo, &tokens, &tamanho);
-    for (int i = 0; i < tamanho; i++)
-    {
-      switch (tokens[i].tipo)
-      {
-      case Mais:
-        printf("Mais\n");
-        break;
-      case Menos:
-        printf("Menos\n");
-        break;
-      case Multiplicacao:
-        printf("Multiplicacao\n");
-        break;
-      case Divisao:
-        printf("Divisao\n");
-        break;
-      case Potenciacao:
-        printf("Potenciacao\n");
-        break;
-      case Numero:
-        printf("Numero: %s\n", tokens[i].valor);
-        break;
-      case Indeterminado:
-        printf("Indertemidado: %s\n", tokens[i].valor);
-        break;
-      }
-    }
     expressao = parser(&tokens, &tamanho);
     if (expressao == 0)
       printf("Resultado: Vazio\n");
