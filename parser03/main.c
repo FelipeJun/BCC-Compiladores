@@ -208,7 +208,7 @@ bool checkInputCommands(char *texto)
 {
   if (texto[0] == ':')
   {
-    if (strcmp(texto, ":quit\n") == 0)
+    if (strcmp(texto+1, "quit\n") == 0 || strcmp(texto+1, "exit\n") == 0)
     {
       return true;
     }
@@ -228,10 +228,12 @@ int main()
   TokenInfo *tokens;
   int tamanho;
   printf("Bem Vindo!\nDigite a expressao desejada, ou digite :quit para fechar o programa\n");
-  while (!exit)
+  while (1)
   {
     fgets(textoArquivo, TAMANHO_MAX_TEXTO, stdin);
     exit = checkInputCommands(textoArquivo);
+    if (exit)
+      break;
     tokenizer(textoArquivo, &tokens, &tamanho);
     expressao = parser(&tokens, &tamanho);
     if (expressao == 0)
