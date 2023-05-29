@@ -1,10 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic -std=c11
 LDFLAGS =
-TARGET = main.exe
+TARGET = nre.exe
 
-SRCS = $(wildcard src/*.c)
-OBJS = $(patsubst src/%.c,%.o,$(SRCS))
+SRCS = $(wildcard *.c)
+OBJS = $(patsubst %.c,%.o,$(SRCS))
 
 ifeq ($(OS),Windows_NT)
     RM = del /Q

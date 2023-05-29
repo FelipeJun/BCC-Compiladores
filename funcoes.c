@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define MAX_SIZE 255
 
@@ -21,51 +22,68 @@
 #define JN 144
 #define JZ 160
 
+bool verificaNegativo(uint8_t num){
+  return num >> 7;
+}
 
-void checkByte(uint8_t buffer [],uint8_t *Ac,int *tamanho){
-	//{ 0,1,2, 3, 4, 5, 6, 7,8, 8,10,11}
-	//{42,0,0,32,10,48,11,16,1,240,3,5}
-	uint8_t indexAtual = *tamanho;
-	uint8_t proxIndex = (++(indexAtual));
+void checkByte(uint8_t buffer [],uint8_t *Ac,uint8_t *Pc,uint8_t *tamanho){
+	uint8_t proxIndex= *tamanho;
+	uint8_t indexAtual = (proxIndex++);
+	// printf("\nbuffer[%d] = %d",indexAtual,buffer[indexAtual]);
+	// printf("\nbufferProx[%d] = %d",proxIndex,buffer[proxIndex]);
 	switch(buffer[*tamanho]){
 		case HLT:
-			printf("Resultado final:\nAC: %d\nPC: %d",buffer[1],buffer[2]);
+			printf("\nResultado final:\nAC: %d\nPC: %d",buffer[1],*Pc);
+			printf("\n[ ");
+			for(int j = 0;j<MAX_SIZE;j++){
+				printf("%d, ",buffer[j]);
+			}
+			printf("]");
 			exit(0);
 		break;
 		case STA:
-			printf("STA");
+			// printf(" STA");
 			buffer[buffer[proxIndex]] = *Ac;
 			(*tamanho)++;
 		break;
 		case LDA:
-			printf("LDA");
+			// printf(" LDA");
 			*Ac = buffer[buffer[proxIndex]];
 			(*tamanho)++;
 		break;
 		case ADD:
-			printf("ADD");
+			// printf(" ADD");
 			*Ac += buffer[buffer[proxIndex]];
 			(*tamanho)++;
 		break;
 		case OR:
-			printf("OR");
+			// printf(" OR");
+			*Ac |= buffer[buffer[proxIndex]];
+			(*tamanho)++;
 		break;
 		case AND:
-			printf("AND");
+			// printf(" AND");
+			*Ac &= buffer[buffer[proxIndex]];
+			(*tamanho)++;
 		break;
 		case NOT:
-			printf("NOT");
+			// printf(" NOT");
 			*Ac = ~*Ac;
 		break;
 		case JMP:
-			printf("JMP");
+			// printf(" JMP");
 			(*tamanho) = buffer[proxIndex];
 		break;
 		case JN:
-			printf("JN");
+			// printf(" JN");
+			if(verificaNegativo(buffer[buffer[proxIndex]]))
+				*tamanho = buffer[proxIndex];
 		break;
 		case JZ:
-			printf("JZ");
+			// printf(" JZ");
+			if(*Ac == 0){
+				*tamanho = buffer[proxIndex];
+			}
 		break;
 	}
 	(++(*tamanho));
@@ -75,8 +93,8 @@ void checkByte(uint8_t buffer [],uint8_t *Ac,int *tamanho){
 int binary(FILE *file){
 	
 	uint8_t buffer [MAX_SIZE];
-	uint8_t AC = 0;
-	int i = 0;
+	uint8_t AC,PC = 0;
+	uint8_t i = 0;
 	fseek(file, 0, SEEK_SET);
 	fread(&buffer, MAX_SIZE, 1, file);
 	if(buffer[0] != 42){
@@ -85,9 +103,10 @@ int binary(FILE *file){
 	}
 	else{
 		AC = buffer[1];
+		PC = buffer[2];
 		while(1){
-			buffer[2] = i;
-			checkByte(buffer,&AC,&i);
+			PC = i;
+			checkByte(buffer,&AC,&PC,&i);
 		}
 	}
 	return 0;
